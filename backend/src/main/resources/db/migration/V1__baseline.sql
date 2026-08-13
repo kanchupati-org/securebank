@@ -1,0 +1,4 @@
+-- SecureBank database baseline.
+--
+-- The users table already exists in this development database.
+-- This migration establishes the Flyway baseline history.
