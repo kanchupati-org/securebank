@@ -1,6 +1,7 @@
 package com.securebank.backend.controller;
 
 import com.securebank.backend.dto.LoginRequest;
+import com.securebank.backend.dto.UserResponse;
 import com.securebank.backend.entity.User;
 import com.securebank.backend.repository.UserRepository;
 
@@ -9,9 +10,12 @@ import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -58,26 +62,42 @@ httpRequest.changeSessionId();
 session.setAttribute("userId", user.getId());
 
 return ResponseEntity.ok(
-        "Login successful"
+        Map.of("message", "Login successful")
 );
     }
 
     
 
     @GetMapping("/me")
-    public ResponseEntity<?> me(HttpSession session) {
+public ResponseEntity<?> me(HttpSession session) {
 
-        Object userId = session.getAttribute("userId");
+    Object userIdObject = session.getAttribute("userId");
 
-        if (userId == null) {
-            return ResponseEntity.status(401)
-                    .body("Not authenticated");
-        }
-
-        return ResponseEntity.ok(
-                "Logged-in user ID: " + userId
-        );
+    if (userIdObject == null) {
+        return ResponseEntity.status(401)
+                .body("Not authenticated");
     }
+
+    Long userId = (Long) userIdObject;
+
+    User user = userRepository.findById(userId)
+            .orElse(null);
+
+    if (user == null) {
+        session.invalidate();
+
+        return ResponseEntity.status(401)
+                .body("Not authenticated");
+    }
+
+    return ResponseEntity.ok(
+            Map.of(
+                    "id", user.getId(),
+                    "name", user.getName(),
+                    "email", user.getEmail()
+            )
+    );
+}
 
     @PostMapping("/logout")
 public ResponseEntity<?> logout(HttpSession session) {
@@ -86,4 +106,7 @@ public ResponseEntity<?> logout(HttpSession session) {
 
     return ResponseEntity.ok("Logout successful");
 }
+
+
+
 }

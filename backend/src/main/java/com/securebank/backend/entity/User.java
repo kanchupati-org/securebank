@@ -1,5 +1,7 @@
 package com.securebank.backend.entity;
 
+import com.securebank.backend.enums.UserRole;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -19,13 +21,23 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole role;
+
     public User() {
     }
 
-    public User(String name, String email, String passwordHash) {
+    public User(
+            String name,
+            String email,
+            String passwordHash,
+            UserRole role) {
+
         this.name = name;
         this.email = email;
         this.passwordHash = passwordHash;
+        this.role = role;
     }
 
     public Long getId() {
@@ -55,4 +67,12 @@ public class User {
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
     }
+
+    public UserRole getRole() {
+           return role;
+}
+
+    public void setRole(UserRole role) {
+           this.role = role;
+}
 }

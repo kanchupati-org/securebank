@@ -6,6 +6,8 @@ import com.securebank.backend.entity.User;
 import com.securebank.backend.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.securebank.backend.enums.UserRole;
+import com.securebank.backend.exception.AccessDeniedException;
 
 @Service
 public class UserService {
@@ -29,7 +31,8 @@ public class UserService {
         User user = new User(
                 request.getName(),
                 request.getEmail(),
-                passwordHash
+                passwordHash,
+                UserRole.CUSTOMER
         );
 
         User savedUser = userRepository.save(user);
@@ -40,4 +43,40 @@ public class UserService {
                 savedUser.getEmail()
         );
     }
+
+    public UserResponse getCurrentUser(Long userId) {
+
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    return new UserResponse(
+            user.getId(),
+            user.getName(),
+            user.getEmail()
+    );
+}
+
+public UserResponse getUserById(
+        Long requestedUserId,
+        Long authenticatedUserId) {
+
+    User authenticatedUser = userRepository.findById(authenticatedUserId)
+            .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+    if (!requestedUserId.equals(authenticatedUserId)
+            && authenticatedUser.getRole() != UserRole.ADMIN) {
+
+        throw new AccessDeniedException("Access denied");
+    }
+
+    User user = userRepository.findById(requestedUserId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    return new UserResponse(
+            user.getId(),
+            user.getName(),
+            user.getEmail()
+    );
+}
+
 }
