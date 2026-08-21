@@ -102,6 +102,18 @@ public ResponseEntity<Map<String, Object>> handleInvalidTransfer(
             ));
 }
 
+@ExceptionHandler(IdempotencyConflictException.class)
+public ResponseEntity<Map<String, Object>> handleIdempotencyConflict(
+        IdempotencyConflictException ex) {
+
+    return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body(Map.of(
+                    "status", 409,
+                    "message", ex.getMessage()
+            ));
+}
+
 @ExceptionHandler(InsufficientBalanceException.class)
 public ResponseEntity<Map<String, Object>> handleInsufficientBalance(
         InsufficientBalanceException ex) {

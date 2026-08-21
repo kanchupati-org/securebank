@@ -175,4 +175,46 @@ void logoutInvalidatesSession() throws Exception {
     .andExpect(status().isUnauthorized());
 }
 
+@Test
+void successfulLoginChangesSessionIdToPreventSessionFixation()
+        throws Exception {
+
+    MockHttpSession preLoginSession =
+            new MockHttpSession();
+
+    String originalSessionId =
+            preLoginSession.getId();
+
+    MvcResult result = mockMvc.perform(
+            post("/api/auth/login")
+                    .session(preLoginSession)
+                    .contentType("application/json")
+                    .content("""
+                            {
+                              "email": "pavan-secure@example.com",
+                              "password": "MyPassword123!"
+                            }
+                            """)
+    )
+    .andExpect(status().isOk())
+    .andReturn();
+
+    HttpSession authenticatedSession =
+            result.getRequest().getSession(false);
+
+    assertNotNull(authenticatedSession);
+
+    assertEquals(
+            5L,
+            authenticatedSession.getAttribute("userId")
+    );
+
+    assertTrue(
+            !originalSessionId.equals(
+                    authenticatedSession.getId()
+            ),
+            "Session ID must change after successful authentication"
+    );
+}
+
 }

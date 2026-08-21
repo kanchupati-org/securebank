@@ -113,3 +113,15 @@ button[type="submit"]:disabled {
   cursor: pointer;
   font-size: inherit;
 }
+
+.user-info {
+  margin-bottom: 25px;
+  padding: 15px;
+  border: 1px solid #30323a;
+  border-radius: 6px;
+  background: #24262d;
+}
+
+.user-info p {
+  margin: 8px 0;
+}

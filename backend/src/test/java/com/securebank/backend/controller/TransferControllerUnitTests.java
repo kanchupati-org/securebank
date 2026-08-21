@@ -32,7 +32,8 @@ class TransferControllerUnitTests {
         .when(transferService)
         .transfer(
                 org.mockito.ArgumentMatchers.any(TransferRequest.class),
-                org.mockito.ArgumentMatchers.eq(5L)
+                org.mockito.ArgumentMatchers.eq(5L),
+                org.mockito.ArgumentMatchers.anyString()
         );
 
         TransferController controller =
@@ -49,6 +50,7 @@ class TransferControllerUnitTests {
         mockMvc.perform(
                 post("/api/transfers")
                         .session(session)
+                        .header("Idempotency-Key", "unit-test-key-001")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {

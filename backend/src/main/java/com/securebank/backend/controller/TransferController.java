@@ -1,6 +1,7 @@
 package com.securebank.backend.controller;
 
 import com.securebank.backend.dto.TransferRequest;
+import com.securebank.backend.dto.TransferResponse;
 import com.securebank.backend.service.TransferService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
@@ -19,9 +20,11 @@ public class TransferController {
     }
 
     @PostMapping
-    public ResponseEntity<?> transfer(
-            @Valid @RequestBody TransferRequest request,
-            HttpSession session) {
+public ResponseEntity<?> transfer(
+        @RequestHeader(value = "Idempotency-Key", required = false)
+        String idempotencyKey,
+        @Valid @RequestBody TransferRequest request,
+        HttpSession session) {
 
         Object userIdObject = session.getAttribute("userId");
 
@@ -31,13 +34,18 @@ public class TransferController {
                     .build();
         }
 
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
         Long authenticatedUserId = (Long) userIdObject;
 
-        transferService.transfer(
-                request,
-                authenticatedUserId
-        );
+        TransferResponse response = transferService.transfer(
+        request,
+        authenticatedUserId,
+        idempotencyKey
+);
 
-        return ResponseEntity.ok().build();
+return ResponseEntity.ok(response);
     }
 }
